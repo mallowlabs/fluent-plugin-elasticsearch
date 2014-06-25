@@ -6,6 +6,7 @@ require 'elasticsearch'
 class Fluent::ElasticsearchOutput < Fluent::BufferedOutput
   Fluent::Plugin.register_output('elasticsearch', self)
 
+  config_param :scheme, :string, :default => 'http'
   config_param :host, :string,  :default => 'localhost'
   config_param :port, :integer, :default => 9200
   config_param :logstash_format, :bool, :default => false
@@ -49,9 +50,12 @@ class Fluent::ElasticsearchOutput < Fluent::BufferedOutput
 
   def get_hosts
     if @hosts
-        @hosts.split(',').map {|x| hp = x.split(':'); { host: hp[0], port: hp[1] || @port } }.compact
+        @hosts.split(',').map {|x|
+          hp = x.split(':')
+          { scheme: @scheme, host: hp[0], port: hp[1] || @port }
+        }.compact
      else
-       [{host: @host, port: @port }]
+       [{ scheme: @scheme, host: @host, port: @port }]
      end
   end
 
